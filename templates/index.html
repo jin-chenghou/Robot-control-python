@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>机械臂控制</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f1f1f1;
+        }
+
+        .container {
+            margin-top: 10px;
+        }
+
+        .progress-bar {
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #444;
+        }
+
+        h3 {
+            color: #333;
+        }
+
+        .joint-control {
+            -webkit-appearance: none;
+            height: 5px;
+            width: 5px;
+            border-radius: 5px;
+            background: #f1f1f1;
+            outline: none;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .joint-control::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #4caf50;
+            cursor: pointer;
+        }
+
+        .joint-control::-moz-range-thumb {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #4caf50;
+            cursor: pointer;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>机械臂控制</h1>
+
+        <div class="row">
+            <div class="col s12 m6">
+                <div class="progress-bar">
+                    <h3>底座</h3>
+                    <input type="range" id="joint1" min="0" max="255" value="00" class="joint-control" data-joint="1">
+                </div>
+            </div>
+
+            <div class="col s12 m6">
+                <div class="progress-bar">
+                    <h3>一号臂</h3>
+                    <input type="range" id="joint2" min="0" max="255" value="80" class="joint-control" data-joint="2">
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col s12 m6">
+                <div class="progress-bar">
+                    <h3>二号臂</h3>
+                    <input type="range" id="joint3" min="0" max="255" value="80" class="joint-control" data-joint="3">
+                </div>
+            </div>
+
+            <div class="col s12 m6">
+                <div class="progress-bar">
+                    <h3>三号臂</h3>
+                    <input type="range" id="joint4" min="0" max="255" value="80" class="joint-control" data-joint="4">
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col s12 m6">
+                <div class="progress-bar">
+                    <h3>夹子</h3>
+                    <input type="range" id="joint5" min="0" max="255" value="134" class="joint-control" data-joint="5">
+                </div>
+            </div>
+
+
+            <div class="col s12 m6">
+                <div class="progress-bar">
+                    <h3>预设动作</h3>
+                    <button id="preset-action-btn" class="btn">执行</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script>
+        var sliders = document.getElementsByClassName('joint-control');
+        var presetActionButton = document.getElementById('preset-action-btn');
+        var flag = true;
+
+        Array.from(sliders).forEach(function(slider) {
+            slider.addEventListener('input', function() {
+                var joint1 = $('#joint1').val();
+                var joint2 = $('#joint2').val();
+                var joint3 = $('#joint3').val();
+                var joint4 = $('#joint4').val();
+                var joint5 = $('#joint5').val();
+
+                // 向服务器发送数据
+                 presetActionButton.addEventListener('click', function() {
+                    // 向服务器发送预设动作指令
+                 if(flag) {
+                     fetch('/preset-action', {
+                         method: 'POST'
+                     });
+                     flag = false;
+                 }
+                    // fetch('/preset-action', {
+                    // method: 'POST'
+                    //     });
+                     });
+                fetch('/control', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        joint1: joint1,
+                        joint2: joint2,
+                        joint3: joint3,
+                        joint4: joint4,
+                        joint5: joint5,
+
+                    })
+                });
+                flag = true;
+            });
+        });
+    </script>
+</body>
+</html>

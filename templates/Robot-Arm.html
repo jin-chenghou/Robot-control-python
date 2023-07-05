@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Robot-Arm</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f1f1f1;
+        }
+
+        .container {
+            margin-top: 10px;
+        }
+
+        /* .progress-bar {
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+        } */
+
+        /* h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #444;
+        }
+
+        h3 {
+            color: #333;
+        } */
+
+        * {
+		box-sizing: border-box;
+		text-align: center;
+		margin: 0;
+		padding: 0;
+	    }
+
+        header, footer {
+		color: #FFF;
+		padding: 7px;
+		opacity: 0.5;
+	    }
+
+        header {
+		background-color: #99c2db;
+		opacity: 0.7;
+        font-weight: 100;
+        }
+
+        section {
+            margin-top: 3%;
+		    color: #73c1ca;
+        }
+
+        footer {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background-color: #99c2db;
+			opacity: 0.5;
+        }
+
+        /* button{
+	            background-color:#6ca6a6;
+	            color:white;
+	            width: 220px;
+	            height: 70px;
+	            border:5;
+                font-weight: 200;
+	            font-size: 20px;
+				font-family:Georgia, 'Times New Roman', Times, serif;
+	            box-sizing: content-box;
+                border-radius: 10%;
+                size: 10px;
+            }
+            button:hover{
+	            background-color: #70cfed;
+            } */
+
+	    video{
+			position: fixed;
+            right:0;
+            bottom: 0;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            z-index: -9999;
+	    }
+
+        .joint-control {
+            -webkit-appearance: none;
+            height: 5px;
+            width: 5px;
+            border-radius: 5px;
+            background: #f1f1f1;
+            outline: none;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .joint-control::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #4caf50;
+            cursor: pointer;
+        }
+
+        .joint-control::-moz-range-thumb {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #4caf50;
+            cursor: pointer;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <header>
+        <h3 style="text-align: center;">Robot-Arm Experiment Platform</h3>
+    </header>
+
+    <section style="text-align: center;">
+    <div class="container">
+
+            <h5>Robot-arm rotation degree 1 : <input type="range" id="joint1" min="0" max="255" value="00" class="joint-control" data-joint="1" onchange="document.getElementById('show1').innerHTML=value" style="width: 35%;"></h5>
+             Degree: <span id="show1">00</span>
+
+            <h5>Robot-arm rotation degree 2 : <input type="range" id="joint2" min="0" max="255" value="80" class="joint-control" data-joint="2" onchange="document.getElementById('show2').innerHTML=value" style="width: 35%;"></h5>
+             Degree: <span id="show2">80</span>
+
+            <h5>Robot-arm rotation degree 3 : <input type="range" id="joint3" min="0" max="255" value="80" class="joint-control" data-joint="3" onchange="document.getElementById('show3').innerHTML=value" style="width: 35%;"></h5>
+             Degree: <span id="show3">80</span>
+
+            <h5>Robot-arm rotation degree 4 : <input type="range" id="joint4" min="0" max="255" value="80" class="joint-control" data-joint="4" onchange="document.getElementById('show4').innerHTML=value" style="width: 35%;"></h5>
+             Degree: <span id="show4">80</span>
+
+            <h5>Robot-arm rotation degree 5 : <input type="range" id="joint5" min="0" max="255" value="134" class="joint-control" data-joint="5" onchange="document.getElementById('show5').innerHTML=value" style="width: 35%;"></h5>
+             Degree: <span id="show5">134</span>
+
+            <h2>  </h2>
+
+            <h5>Robot-Arm Demo Action</h5>
+            <button id="preset-action-btn" class="btn">Start</button>
+        </div>
+
+    </section>
+
+    <footer style="text-align: center;"style="background-color: lavender;">
+        <h6 style="text-align: center;">Author@白色的乌云</h6>
+    </footer>
+
+    <video id="v1" autoplay muted loop style="width: 100%">
+         <source src="{{ url_for('static', filename='bg.mp4') }}" type="video/mp4">
+    </video>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script>
+        var sliders = document.getElementsByClassName('joint-control');
+        var presetActionButton = document.getElementById('preset-action-btn');
+        var flag = true;
+
+        Array.from(sliders).forEach(function(slider) {
+            slider.addEventListener('input', function() {
+                var joint1 = $('#joint1').val();
+                var joint2 = $('#joint2').val();
+                var joint3 = $('#joint3').val();
+                var joint4 = $('#joint4').val();
+                var joint5 = $('#joint5').val();
+
+                // 向服务器发送数据
+                 presetActionButton.addEventListener('click', function() {
+                    // 向服务器发送预设动作指令
+                 if(flag) {
+                     fetch('/preset-action', {
+                         method: 'POST'
+                     });
+                     flag = false;
+                 }
+                     });
+                fetch('/control', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        joint1: joint1,
+                        joint2: joint2,
+                        joint3: joint3,
+                        joint4: joint4,
+                        joint5: joint5,
+
+                    })
+                });
+                flag = true;
+            });
+        });
+    </script>
+
+    <script>
+        (function (window, document, undefined) {
+            var hearts = [];
+            window.requestAnimationFrame = (function () {
+                return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function (callback) {
+            setTimeout(callback, 1000 / 60);
+        }
+            })();
+            init();
+            function init() {
+                css(".heart{width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+                attachEvent();
+                gameloop();
+            }
+            function gameloop() {
+                for (var i = 0; i < hearts.length; i++) {
+                    if (hearts[i].alpha <= 0) {
+                        document.body.removeChild(hearts[i].el);
+                        hearts.splice(i, 1);
+                        continue;
+                    }
+                    hearts[i].y--;
+                    hearts[i].scale += 0.004;
+                    hearts[i].alpha -= 0.013;
+                    hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+                }
+                requestAnimationFrame(gameloop);
+            }
+            function attachEvent() {
+                var old = typeof window.onclick === "function" && window.onclick;
+                window.onclick = function (event) {
+                    old && old();
+                    createHeart(event);
+                }
+            }
+            function createHeart(event) {
+                var d = document.createElement("div");
+                d.className = "heart";
+                hearts.push({
+                    el: d,
+                    x: event.clientX - 5,
+                    y: event.clientY - 5,
+                    scale: 1,
+                    alpha: 1,
+                    color: randomColor()
+                });
+                document.body.appendChild(d);
+            }
+            function css(css) {
+                var style = document.createElement("style");
+                style.type = "text/css";
+                try {
+                    style.appendChild(document.createTextNode(css));
+                } catch (ex) {
+                    style.styleSheet.cssText = css;
+                }
+                document.getElementsByTagName('head')[0].appendChild(style);
+            }
+            function randomColor() {
+                return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+            }
+        })(window, document);
+      </script>
+</body>
+</html>
